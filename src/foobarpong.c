@@ -25,6 +25,54 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <stddef.h>
+#include <stdio.h>
+
+#include "SDL.h"
+
 int main(void){
+        if(SDL_Init(SDL_INIT_VIDEO) < 0){
+                fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        SDL_Window *window;
+        SDL_Renderer *renderer;
+        if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &window, &renderer) < 0){
+                fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
+                goto exit_wind_rend;
+        }
+
+        const size_t WIDTH = 640;
+        const size_t HEIGHT = 480;
+        if(SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT) < 0){
+                fprintf(stderr, "*** Error: Unable to set resolution for rendering: %s\n", SDL_GetError());
+                goto exit_logical_size;
+        }
+        if(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255) < 0){
+                fprintf(stderr, "*** Error: Unable to set the renderer draw color: %s\n", SDL_GetError());
+                goto exit_draw_color;
+        }
+
+        if(SDL_RenderClear(renderer) < 0){
+                fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
+                goto exit_clear_renderer;
+        }
+
+        SDL_RenderPresent(renderer);
+
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+
         return 0;
+
+exit_clear_renderer:
+exit_draw_color:
+exit_logical_size:
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+exit_wind_rend:
+        SDL_Quit();
+        return 1;
 }
