@@ -30,6 +30,9 @@
 
 #include "SDL.h"
 
+static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
+static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
+
 int main(void){
         if(SDL_Init(SDL_INIT_VIDEO) < 0){
                 fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
@@ -38,41 +41,54 @@ int main(void){
 
         SDL_Window *window;
         SDL_Renderer *renderer;
-        if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, &window, &renderer) < 0){
-                fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
-                goto exit_wind_rend;
-        }
-
-        const size_t WIDTH = 640;
-        const size_t HEIGHT = 480;
-        if(SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT) < 0){
-                fprintf(stderr, "*** Error: Unable to set resolution for rendering: %s\n", SDL_GetError());
-                goto exit_logical_size;
-        }
-        if(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255) < 0){
-                fprintf(stderr, "*** Error: Unable to set the renderer draw color: %s\n", SDL_GetError());
-                goto exit_draw_color;
+        if(initDisplay(&window, &renderer, 640, 480)){
+                fprintf(stderr, "*** Error: Unable to initialize display: %s\n", SDL_GetError());
+                goto err_initDisplay;
         }
 
         if(SDL_RenderClear(renderer) < 0){
                 fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
-                goto exit_clear_renderer;
+                goto err_rend_clear;
         }
 
         SDL_RenderPresent(renderer);
 
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        closeDisplay(window, renderer);
         SDL_Quit();
 
         return 0;
 
-exit_clear_renderer:
-exit_draw_color:
-exit_logical_size:
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-exit_wind_rend:
+err_rend_clear:
+        closeDisplay(window, renderer);
+err_initDisplay:
         SDL_Quit();
         return 1;
+}
+
+static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH){
+        if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, window, renderer) < 0){
+                fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        if(SDL_RenderSetLogicalSize(*renderer, WIDTH, HEIGHT) < 0){
+                fprintf(stderr, "*** Error: Unable to set resolution for rendering: %s\n", SDL_GetError());
+                goto err_set_logical_size;
+        }
+        if(SDL_SetRenderDrawColor(*renderer, 0, 0, 0, 255) < 0){
+                fprintf(stderr, "*** Error: Unable to set the renderer draw color: %s\n", SDL_GetError());
+                goto err_set_rend_draw_color;
+        }
+
+        return 0;
+
+err_set_rend_draw_color:
+err_set_logical_size:
+        closeDisplay(*window, *renderer);
+        return 1;
+}
+
+static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
 }
