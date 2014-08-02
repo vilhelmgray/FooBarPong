@@ -31,6 +31,7 @@
 #include "SDL.h"
 
 static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
+static void handleEvents(unsigned *const running);
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
 
 int main(void){
@@ -43,27 +44,13 @@ int main(void){
 
         unsigned running = 1;
         do{
-                SDL_Event event;
-                while(SDL_PollEvent(&event)){
-                        switch(event.type){
-                                case SDL_KEYDOWN:
-                                        if(event.key.keysym.sym == SDLK_ESCAPE){
-                                                running = 0;
-                                        }
-                                        break;
-                                case SDL_QUIT:
-                                        running = 0;
-                                        break;
-                                default:
-                                        break;
-                        }
-                }
-
                 if(SDL_RenderClear(renderer) < 0){
                         fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
                         goto err_rend_clear;
                 }
                 SDL_RenderPresent(renderer);
+
+                handleEvents(&running);
         }while(running);
 
         closeDisplay(window, renderer);
@@ -79,6 +66,24 @@ static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
+}
+
+static void handleEvents(unsigned *const running){
+        SDL_Event event;
+        while(SDL_PollEvent(&event)){
+                switch(event.type){
+                        case SDL_KEYDOWN:
+                                if(event.key.keysym.sym == SDLK_ESCAPE){
+                                        *running = 0;
+                                }
+                                break;
+                        case SDL_QUIT:
+                                *running = 0;
+                                break;
+                        default:
+                                break;
+                }
+        }
 }
 
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH){
