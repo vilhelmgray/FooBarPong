@@ -46,12 +46,26 @@ int main(void){
                 goto err_initDisplay;
         }
 
-        if(SDL_RenderClear(renderer) < 0){
-                fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
-                goto err_rend_clear;
-        }
+        unsigned running = 1;
+        do{
+                SDL_Event event;
+                while(SDL_PollEvent(&event)){
+                        switch(event.type){
+                                case SDL_KEYDOWN:
+                                case SDL_QUIT:
+                                        running = 0;
+                                        break;
+                                default:
+                                        break;
+                        }
+                }
 
-        SDL_RenderPresent(renderer);
+                if(SDL_RenderClear(renderer) < 0){
+                        fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
+                        goto err_rend_clear;
+                }
+                SDL_RenderPresent(renderer);
+        }while(running);
 
         closeDisplay(window, renderer);
         SDL_Quit();
