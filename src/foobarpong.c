@@ -34,16 +34,11 @@ static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
 
 int main(void){
-        if(SDL_Init(SDL_INIT_VIDEO) < 0){
-                fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
-                return 1;
-        }
-
         SDL_Window *window;
         SDL_Renderer *renderer;
         if(initDisplay(&window, &renderer, 640, 480)){
-                fprintf(stderr, "*** Error: Unable to initialize display: %s\n", SDL_GetError());
-                goto err_initDisplay;
+                fprintf(stderr, "*** Error: Unable to initialize display\n");
+                return 1;
         }
 
         unsigned running = 1;
@@ -72,26 +67,29 @@ int main(void){
         }while(running);
 
         closeDisplay(window, renderer);
-        SDL_Quit();
 
         return 0;
 
 err_rend_clear:
         closeDisplay(window, renderer);
-err_initDisplay:
-        SDL_Quit();
         return 1;
 }
 
 static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
+        SDL_Quit();
 }
 
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH){
+        if(SDL_Init(SDL_INIT_VIDEO) < 0){
+                fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
+                return 1;
+        }
+
         if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, window, renderer) < 0){
                 fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
-                return 1;
+                goto err_create_wind_rend;
         }
 
         if(SDL_RenderSetLogicalSize(*renderer, WIDTH, HEIGHT) < 0){
@@ -107,6 +105,9 @@ static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const 
 
 err_set_rend_draw_color:
 err_set_logical_size:
-        closeDisplay(*window, *renderer);
+        SDL_DestroyRenderer(*renderer);
+        SDL_DestroyWindow(*window);
+err_create_wind_rend:
+        SDL_Quit();
         return 1;
 }
