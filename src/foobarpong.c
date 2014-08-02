@@ -30,10 +30,10 @@
 
 #include "SDL.h"
 
-static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
+static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer);
 static unsigned drawWorld(SDL_Renderer *const renderer);
 static void handleEvents(unsigned *const running);
-static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
+static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer, const size_t HEIGHT, const size_t WIDTH);
 
 int main(void){
         SDL_Window *window;
@@ -62,7 +62,7 @@ err_drawWorld:
         return 1;
 }
 
-static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
+static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer){
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -97,7 +97,7 @@ static void handleEvents(unsigned *const running){
         }
 }
 
-static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH){
+static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer, const size_t HEIGHT, const size_t WIDTH){
         if(SDL_Init(SDL_INIT_VIDEO) < 0){
                 fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
                 return 1;
