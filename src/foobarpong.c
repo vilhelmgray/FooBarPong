@@ -31,6 +31,7 @@
 #include "SDL.h"
 
 static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
+static unsigned drawWorld(SDL_Renderer *const renderer);
 static void handleEvents(unsigned *const running);
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
 
@@ -44,11 +45,10 @@ int main(void){
 
         unsigned running = 1;
         do{
-                if(SDL_RenderClear(renderer) < 0){
-                        fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
-                        goto err_rend_clear;
+                if(drawWorld(renderer)){
+                        fprintf(stderr, "*** Error: Unable to draw world\n");
+                        goto err_drawWorld;
                 }
-                SDL_RenderPresent(renderer);
 
                 handleEvents(&running);
         }while(running);
@@ -57,7 +57,7 @@ int main(void){
 
         return 0;
 
-err_rend_clear:
+err_drawWorld:
         closeDisplay(window, renderer);
         return 1;
 }
@@ -66,6 +66,17 @@ static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
+}
+
+static unsigned drawWorld(SDL_Renderer *const renderer){
+        if(SDL_RenderClear(renderer) < 0){
+                fprintf(stderr, "*** Error: Unable to clear renderer: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        SDL_RenderPresent(renderer);
+
+        return 0;
 }
 
 static void handleEvents(unsigned *const running){
