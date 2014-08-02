@@ -30,8 +30,8 @@
 
 #include "SDL.h"
 
-static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
 static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer);
+static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH);
 
 int main(void){
         if(SDL_Init(SDL_INIT_VIDEO) < 0){
@@ -65,6 +65,11 @@ err_initDisplay:
         return 1;
 }
 
+static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+}
+
 static unsigned initDisplay(SDL_Window **window, SDL_Renderer **renderer, const size_t HEIGHT, const size_t WIDTH){
         if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, window, renderer) < 0){
                 fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
@@ -86,9 +91,4 @@ err_set_rend_draw_color:
 err_set_logical_size:
         closeDisplay(*window, *renderer);
         return 1;
-}
-
-static void closeDisplay(SDL_Window *window, SDL_Renderer *renderer){
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
 }
