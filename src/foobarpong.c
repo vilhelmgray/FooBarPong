@@ -102,10 +102,6 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                 return 1;
         }
 
-        divider.dimensions.w = 23;
-        divider.dimensions.h = 480;
-        divider.dimensions.x = (WIDTH - divider.dimensions.w)/2;
-        divider.dimensions.y = (HEIGHT - divider.dimensions.h)/2;
         if(SDL_RenderCopy(renderer, divider.texture, NULL, &divider.dimensions)){
                 fprintf(stderr, "*** Error: Unable to draw divider: %s\n", SDL_GetError());
                 return 1;
@@ -196,6 +192,10 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", path, IMG_GetError());
                 goto err_IMG_Load;
         }
+        divider.dimensions.w = (surface->w > WIDTH) ? WIDTH : surface->w;
+        divider.dimensions.h = (surface->h > HEIGHT) ? HEIGHT : surface->h;
+        divider.dimensions.x = (WIDTH - divider.dimensions.w)/2;
+        divider.dimensions.y = (HEIGHT - divider.dimensions.h)/2;
         divider.texture = SDL_CreateTextureFromSurface(renderer, surface);
         if(!divider.texture){
                 fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", path, SDL_GetError());
