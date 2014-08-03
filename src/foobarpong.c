@@ -46,7 +46,7 @@ struct character{
         int x_vel;
         int y_vel;
 };
-static struct character ball = { .x_vel = -5 };
+static struct character ball = { .x_vel = 5 };
 
 struct player{
         struct character avatar;
@@ -63,6 +63,7 @@ static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const rend
 static unsigned loadFiles(SDL_Renderer *const renderer);
 static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer);
 static void moveCharacter(struct character *character);
+static void newGame(void);
 static void processWorld(void);
 static void resetBall(void);
 
@@ -159,8 +160,15 @@ static void handleEvents(unsigned *const running){
         while(SDL_PollEvent(&event)){
                 switch(event.type){
                         case SDL_KEYDOWN:
-                                if(event.key.keysym.sym == SDLK_ESCAPE){
-                                        *running = 0;
+                                switch(event.key.keysym.sym){
+                                        case SDLK_ESCAPE:
+                                                *running = 0;
+                                                break;
+                                        case SDLK_RETURN:
+                                                newGame();
+                                                break;
+                                        default:
+                                                break;
                                 }
                                 break;
                         case SDL_QUIT:
@@ -289,6 +297,20 @@ static void moveCharacter(struct character *character){
 
         character->sprite.dimensions.x = (X_END + X_VEL > WIDTH - 1) ? WIDTH - character->sprite.dimensions.w : ((X_START + X_VEL < 0) ? 0 : X_START + X_VEL);
         character->sprite.dimensions.y = (Y_END + Y_VEL > HEIGHT - 1) ? HEIGHT - character->sprite.dimensions.h : ((Y_START + Y_VEL < 0) ? 0 : Y_START + Y_VEL);
+}
+
+static void newGame(void){
+        player1.score = 0;
+        player2.score = 0;
+
+        player1.avatar.sprite.dimensions.x = (2*player1.avatar.sprite.dimensions.w > WIDTH) ? 0 : player1.avatar.sprite.dimensions.w;
+        player1.avatar.sprite.dimensions.y = (HEIGHT - player1.avatar.sprite.dimensions.h)/2;
+
+        player2.avatar.sprite.dimensions.x = (WIDTH < 2*player2.avatar.sprite.dimensions.w) ? 0 : WIDTH - 2*player2.avatar.sprite.dimensions.w;
+        player2.avatar.sprite.dimensions.y = (HEIGHT - player2.avatar.sprite.dimensions.h)/2;
+
+        ball.x_vel = 5;
+        resetBall();
 }
 
 static void paddleBounce(void){
