@@ -37,9 +37,22 @@ struct sprite{
         SDL_Rect dimensions;
         SDL_Texture *texture;
 };
-
 static struct sprite background;
 static struct sprite divider;
+
+struct character{
+        struct sprite sprite;
+        int x_vel;
+        int y_vel;
+};
+static struct character ball;
+
+struct player{
+        struct character avatar;
+        unsigned score;
+};
+static struct player player1;
+static struct player player2;
 
 static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer);
 static unsigned drawWorld(SDL_Renderer *const renderer);
@@ -106,12 +119,30 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                 return 1;
         }
 
+        if(SDL_RenderCopy(renderer, ball.sprite.texture, NULL, &ball.sprite.dimensions)){
+                fprintf(stderr, "*** Error: Unable to draw ball: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        if(SDL_RenderCopy(renderer, player1.avatar.sprite.texture, NULL, &player1.avatar.sprite.dimensions)){
+                fprintf(stderr, "*** Error: Unable to draw player 1: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        if(SDL_RenderCopy(renderer, player2.avatar.sprite.texture, NULL, &player2.avatar.sprite.dimensions)){
+                fprintf(stderr, "*** Error: Unable to draw player 2: %s\n", SDL_GetError());
+                return 1;
+        }
+
         SDL_RenderPresent(renderer);
 
         return 0;
 }
 
 static void freeFiles(void){
+        SDL_DestroyTexture(player2.avatar.sprite.texture);
+        SDL_DestroyTexture(player1.avatar.sprite.texture);
+        SDL_DestroyTexture(ball.sprite.texture);
         SDL_DestroyTexture(divider.texture);
         SDL_DestroyTexture(background.texture);
 }
@@ -179,22 +210,51 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
 
         if(loadSprite("images/background.png", &background, renderer)){
                 fprintf(stderr, "*** Error: Unable to load background sprite\n");
-                goto err_loadSprite;
+                goto err_load_background;
         }
         background.dimensions.x = 0;
         background.dimensions.y = 0;
 
         if(loadSprite("images/divider.png", &divider, renderer)){
                 fprintf(stderr, "*** Error: Unable to load divider sprite\n");
-                goto err_loadSprite;
+                goto err_load_divider;
         }
         divider.dimensions.x = (WIDTH - divider.dimensions.w)/2;
         divider.dimensions.y = (HEIGHT - divider.dimensions.h)/2;
 
+        if(loadSprite("images/ball.png", &ball.sprite, renderer)){
+                fprintf(stderr, "*** Error: Unable to load ball sprite\n");
+                goto err_load_ball;
+        }
+        ball.sprite.dimensions.x = (WIDTH - ball.sprite.dimensions.w)/2;
+        ball.sprite.dimensions.y = 0;
+
+        if(loadSprite("images/paddle1.png", &player1.avatar.sprite, renderer)){
+                fprintf(stderr, "*** Error: Unable to load player 1 sprite\n");
+                goto err_load_player1;
+        }
+        player1.avatar.sprite.dimensions.x = (2*player1.avatar.sprite.dimensions.w > WIDTH) ? 0 : player1.avatar.sprite.dimensions.w;
+        player1.avatar.sprite.dimensions.y = 0;
+
+        if(loadSprite("images/paddle2.png", &player2.avatar.sprite, renderer)){
+                fprintf(stderr, "*** Error: Unable to load player 2 sprite\n");
+                goto err_load_player2;
+        }
+        player2.avatar.sprite.dimensions.x = (WIDTH < 2*player2.avatar.sprite.dimensions.w) ? 0 : WIDTH - 2*player2.avatar.sprite.dimensions.w;
+        player2.avatar.sprite.dimensions.y = 0;
+
         IMG_Quit();
         return 0;
 
-err_loadSprite:
+err_load_player2:
+        SDL_DestroyTexture(player1.avatar.sprite.texture);
+err_load_player1:
+        SDL_DestroyTexture(ball.sprite.texture);
+err_load_ball:
+        SDL_DestroyTexture(divider.texture);
+err_load_divider:
+        SDL_DestroyTexture(background.texture);
+err_load_background:
         IMG_Quit();
         return 1;
 }
