@@ -41,6 +41,11 @@ AM_PATH_SDL2($SDL_VERSION,
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 LIBS="$LIBS $SDL_LIBS"
 
+AC_SEARCH_LIBS([IMG_Init], [SDL2_image],
+               [],
+               AC_MSG_ERROR([*** SDL2_image library not found!])
+)
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile])
 
