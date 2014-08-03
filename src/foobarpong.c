@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -65,6 +67,8 @@ static void processWorld(void);
 static void resetBall(void);
 
 int main(void){
+        srand(time(NULL));
+
         SDL_Window *window;
         SDL_Renderer *renderer;
         if(initDisplay(&window, &renderer)){
@@ -330,5 +334,5 @@ static void processWorld(void){
 
 static void resetBall(void){
         ball.sprite.dimensions.x = (WIDTH - ball.sprite.dimensions.w)/2;
-        ball.sprite.dimensions.y = 0;
+        ball.sprite.dimensions.y = rand() % (HEIGHT - ball.sprite.dimensions.h);
 }
