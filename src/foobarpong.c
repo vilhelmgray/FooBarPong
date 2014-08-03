@@ -320,7 +320,7 @@ static void processWorld(void){
                 }
         }else if((BALL_X_START >= PLAYER2_X_START && BALL_X_START <= PLAYER2_X_END) || (BALL_X_END >= PLAYER2_X_START && BALL_X_END <= PLAYER2_X_END)){
                 if((BALL_Y_START >= PLAYER2_Y_START && BALL_Y_START <= PLAYER2_Y_END) || (BALL_Y_END >= PLAYER2_Y_START && BALL_Y_END <= PLAYER2_Y_END)){
-                        ball.sprite.dimensions.x = PLAYER2_X_START - 1;
+                        ball.sprite.dimensions.x = PLAYER2_X_START - ball.sprite.dimensions.w;
                         ball.x_vel *= -1;
                 }
         }else if(BALL_Y_START == 0 || BALL_Y_END == HEIGHT -1){
