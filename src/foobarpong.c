@@ -25,15 +25,14 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
 
-const size_t WIDTH = 640;
-const size_t HEIGHT = 480;
+const int WIDTH = 640;
+const int HEIGHT = 480;
 
 struct sprite{
         SDL_Rect dimensions;
