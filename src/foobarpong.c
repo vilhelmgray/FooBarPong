@@ -31,9 +31,10 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 
-const int WIDTH = 640;
-const int HEIGHT = 480;
+#define WIDTH 640
+#define HEIGHT 480
 
 struct sprite{
         SDL_Rect dimensions;
@@ -51,22 +52,26 @@ static struct character ball = { .x_vel = 5 };
 struct player{
         struct character avatar;
         unsigned score;
+        struct sprite score_display;
 };
-static struct player player1;
-static struct player player2;
+static struct player player1 = { .score_display.dimensions.x = WIDTH/4 };
+static struct player player2 = { .score_display.dimensions.x = WIDTH - WIDTH/4 };
+
+static TTF_Font *font;
 
 static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer);
 static unsigned drawWorld(SDL_Renderer *const renderer);
 static void freeFiles(void);
-static void handleEvents(unsigned *const running);
+static unsigned handleEvents(unsigned *const running, SDL_Renderer *const renderer);
 static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer);
 static unsigned loadFiles(SDL_Renderer *const renderer);
 static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer);
 static void moveCharacter(struct character *character);
-static void newGame(void);
+static unsigned newGame(SDL_Renderer *const renderer);
 static void paddleBounce(void);
-static void processWorld(void);
+static unsigned processWorld(SDL_Renderer *const renderer);
 static void resetBall(void);
+static unsigned updateScoreTexture(struct player *const player, SDL_Renderer *const renderer);
 
 int main(void){
         srand(time(NULL));
@@ -95,8 +100,14 @@ int main(void){
                                 goto err_drawWorld;
                         }
 
-                        handleEvents(&running);
-                        processWorld();
+                        if(handleEvents(&running, renderer)){
+                                fprintf(stderr, "*** Error: Unable to handle events\n");
+                                goto err_handleEvents;
+                        }
+                        if(processWorld(renderer)){
+                                fprintf(stderr, "*** Error: Unable to process world\n");
+                                goto err_processWorld;
+                        }
                 }
         }while(running);
 
@@ -105,6 +116,8 @@ int main(void){
 
         return 0;
 
+err_processWorld:
+err_handleEvents:
 err_drawWorld:
         freeFiles();
 err_loadFiles:
@@ -113,6 +126,8 @@ err_loadFiles:
 }
 
 static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer){
+        TTF_Quit();
+
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -144,19 +159,34 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                 return 1;
         }
 
+        if(SDL_RenderCopy(renderer, player1.score_display.texture, NULL, &player1.score_display.dimensions)){
+                fprintf(stderr, "*** Error: Unable to draw player 1 score: %s\n", SDL_GetError());
+                return 1;
+        }
+
+        if(SDL_RenderCopy(renderer, player2.score_display.texture, NULL, &player2.score_display.dimensions)){
+                fprintf(stderr, "*** Error: Unable to draw player 2 score: %s\n", SDL_GetError());
+                return 1;
+        }
+
         SDL_RenderPresent(renderer);
 
         return 0;
 }
 
 static void freeFiles(void){
+        SDL_DestroyTexture(player2.score_display.texture);
+        SDL_DestroyTexture(player1.score_display.texture);
+
         SDL_DestroyTexture(player2.avatar.sprite.texture);
         SDL_DestroyTexture(player1.avatar.sprite.texture);
         SDL_DestroyTexture(ball.sprite.texture);
         SDL_DestroyTexture(background.texture);
+
+        TTF_CloseFont(font);
 }
 
-static void handleEvents(unsigned *const running){
+static unsigned handleEvents(unsigned *const running, SDL_Renderer *const renderer){
         SDL_Event event;
         while(SDL_PollEvent(&event)){
                 switch(event.type){
@@ -172,7 +202,10 @@ static void handleEvents(unsigned *const running){
                                                 *running = 0;
                                                 break;
                                         case SDLK_RETURN:
-                                                newGame();
+                                                if(newGame(renderer)){
+                                                        fprintf(stderr, "*** Error: Unable to start new game\n");
+                                                        return 1;
+                                                }
                                                 break;
                                         case SDLK_UP:
                                                 player2.avatar.y_vel = -10;
@@ -205,6 +238,8 @@ static void handleEvents(unsigned *const running){
                                 break;
                 }
         }
+
+        return 0;
 }
 
 static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer){
@@ -232,8 +267,14 @@ static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const rend
                 goto err_set_rend_draw_color;
         }
 
+        if(TTF_Init()){
+                fprintf(stderr, "*** Error: Unable to initialize TrueType font support: %s\n", TTF_GetError());
+                goto err_ttf_init;
+        }
+
         return 0;
 
+err_ttf_init:
 err_set_rend_draw_color:
 err_set_logical_size:
         SDL_DestroyRenderer(*renderer);
@@ -245,9 +286,25 @@ err_show_cursor:
 }
 
 static unsigned loadFiles(SDL_Renderer *const renderer){
+        char *font_path = "images/boingium.ttf";
+        font = TTF_OpenFont(font_path, 32);
+        if(!font){
+                fprintf(stderr, "*** Error: Unable to open font file \"%s\": %s\n", font_path, TTF_GetError());
+                return 1;
+        }
+
+        if(updateScoreTexture(&player1, renderer)){
+                fprintf(stderr, "*** Error: Unable to update player 1 score texture\n");
+                goto err_updateScoreTexture;
+        }
+        if(updateScoreTexture(&player2, renderer)){
+                fprintf(stderr, "*** Error: Unable to update player 1 score texture\n");
+                goto err_updateScoreTexture;
+        }
+
         if((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG){
                 fprintf(stderr, "*** Error: Unable to initialize PNG image support: %s\n", IMG_GetError());
-                return 1;
+                goto err_img_init;
         }
 
         if(loadSprite("images/background.png", &background, renderer)){
@@ -288,6 +345,9 @@ err_load_ball:
         SDL_DestroyTexture(background.texture);
 err_load_background:
         IMG_Quit();
+err_img_init:
+err_updateScoreTexture:
+        TTF_CloseFont(font);
         return 1;
 }
 
@@ -326,9 +386,17 @@ static void moveCharacter(struct character *character){
         character->sprite.dimensions.y = (Y_END + Y_VEL > HEIGHT - 1) ? HEIGHT - character->sprite.dimensions.h : ((Y_START + Y_VEL < 0) ? 0 : Y_START + Y_VEL);
 }
 
-static void newGame(void){
+static unsigned newGame(SDL_Renderer *const renderer){
         player1.score = 0;
+        if(updateScoreTexture(&player1, renderer)){
+                fprintf(stderr, "*** Error: Unable to update player 1 score texture\n");
+                return 1;
+        }
         player2.score = 0;
+        if(updateScoreTexture(&player2, renderer)){
+                fprintf(stderr, "*** Error: Unable to update player 2 score texture\n");
+                return 1;
+        }
 
         player1.avatar.sprite.dimensions.x = (2*player1.avatar.sprite.dimensions.w > WIDTH) ? 0 : player1.avatar.sprite.dimensions.w;
         player1.avatar.sprite.dimensions.y = (HEIGHT - player1.avatar.sprite.dimensions.h)/2;
@@ -338,6 +406,8 @@ static void newGame(void){
 
         ball.x_vel = 5;
         resetBall();
+
+        return 0;
 }
 
 static void paddleBounce(void){
@@ -345,7 +415,7 @@ static void paddleBounce(void){
         ball.y_vel *= (rand() % 2) ? -1 : 1;
 }
 
-static void processWorld(void){
+static unsigned processWorld(SDL_Renderer *const renderer){
         moveCharacter(&player1.avatar);
         moveCharacter(&player2.avatar);
         moveCharacter(&ball);
@@ -366,10 +436,18 @@ static void processWorld(void){
         const int PLAYER2_Y_END = PLAYER2_Y_START + (player2.avatar.sprite.dimensions.h-1);
 
         if(BALL_X_START == 0){
-                player1.score++;
+                player2.score++;
+                if(updateScoreTexture(&player1, renderer)){
+                        fprintf(stderr, "*** Error: Unable to update player 1 score texture\n");
+                        return 1;
+                }
                 resetBall();
         }else if(BALL_X_END == WIDTH - 1){
-                player2.score++;
+                player1.score++;
+                if(updateScoreTexture(&player2, renderer)){
+                        fprintf(stderr, "*** Error: Unable to update player 2 score texture\n");
+                        return 1;
+                }
                 resetBall();
         }else if((BALL_X_START >= PLAYER1_X_START && BALL_X_START <= PLAYER1_X_END) || (BALL_X_END >= PLAYER1_X_START && BALL_X_END <= PLAYER1_X_END)){
                 if((BALL_Y_START >= PLAYER1_Y_START && BALL_Y_START <= PLAYER1_Y_END) || (BALL_Y_END >= PLAYER1_Y_START && BALL_Y_END <= PLAYER1_Y_END)){
@@ -386,6 +464,8 @@ static void processWorld(void){
         }else if(BALL_Y_START == 0 || BALL_Y_END == HEIGHT -1){
                 ball.y_vel *= -1;
         }
+
+        return 0;
 }
 
 static void resetBall(void){
@@ -393,4 +473,32 @@ static void resetBall(void){
         ball.sprite.dimensions.y = rand() % (HEIGHT - ball.sprite.dimensions.h);
 
         paddleBounce();
+}
+
+static unsigned updateScoreTexture(struct player *const player, SDL_Renderer *const renderer){
+        char score_str[16];
+        snprintf(score_str, sizeof(score_str), "%u", player->score);
+
+        const SDL_Color COLOR = { .r = 255, .g = 255, .b = 255 };
+        SDL_Surface *font_surface = TTF_RenderText_Solid(font, score_str, COLOR);
+        if(!font_surface){
+                fprintf(stderr, "*** Error: Unable to render score text: %s\n", TTF_GetError());
+                return 1;
+        }
+
+        player->score_display.dimensions.w = (font_surface->w > WIDTH) ? WIDTH : font_surface->w;
+        player->score_display.dimensions.h = (font_surface->h > HEIGHT) ? HEIGHT : font_surface->h;
+        player->score_display.texture = SDL_CreateTextureFromSurface(renderer, font_surface);
+        if(!player->score_display.texture){
+                fprintf(stderr, "*** Error: Unable to create texture from score text surface: %s\n", SDL_GetError());
+                goto err_create_texture;
+        }
+
+        SDL_FreeSurface(font_surface);
+
+        return 0;
+
+err_create_texture:
+        SDL_FreeSurface(font_surface);
+        return 1;
 }
