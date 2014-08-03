@@ -140,6 +140,11 @@ static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const rend
                 return 1;
         }
 
+        if(SDL_ShowCursor(SDL_DISABLE) < 0){
+                fprintf(stderr, "*** Error: Unable to hide cursor: %s\n", SDL_GetError());
+                goto err_show_cursor;
+        }
+
         if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP, window, renderer) < 0){
                 fprintf(stderr, "*** Error: Unable to create window and default renderer: %s\n", SDL_GetError());
                 goto err_create_wind_rend;
@@ -161,6 +166,7 @@ err_set_logical_size:
         SDL_DestroyRenderer(*renderer);
         SDL_DestroyWindow(*window);
 err_create_wind_rend:
+err_show_cursor:
         SDL_Quit();
         return 1;
 }
