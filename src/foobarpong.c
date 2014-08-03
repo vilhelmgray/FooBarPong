@@ -27,12 +27,14 @@
  */
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
 
 const size_t WIDTH = 640;
 const size_t HEIGHT = 480;
+static SDL_Texture *background;
 static SDL_Texture *divider;
 
 static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer);
@@ -89,6 +91,11 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                 return 1;
         }
 
+        if(SDL_RenderCopy(renderer, background, NULL, NULL)){
+                fprintf(stderr, "*** Error: Unable to draw background: %s\n", SDL_GetError());
+                return 1;
+        }
+
         SDL_Rect divider_rect = { .w = 23,
                                   .h = 480 };
         divider_rect.x = (WIDTH - divider_rect.w)/2;
@@ -105,6 +112,7 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
 
 static void freeFiles(void){
         SDL_DestroyTexture(divider);
+        SDL_DestroyTexture(background);
 }
 
 static void handleEvents(unsigned *const running){
@@ -162,13 +170,26 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 return 1;
         }
 
-        char path[256] = "images/divider.png";
+        char path[256] = "images/background.png";
         SDL_Surface *surface = IMG_Load(path);
         if(!surface){
                 fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", path, IMG_GetError());
                 goto err_IMG_Load;
         }
+        background = SDL_CreateTextureFromSurface(renderer, surface);
+        if(!background){
+                fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", path, SDL_GetError());
+                goto err_create_texture;
+        }
 
+        SDL_FreeSurface(surface);
+
+        strcpy(path, "images/divider.png");
+        surface = IMG_Load(path);
+        if(!surface){
+                fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", path, IMG_GetError());
+                goto err_IMG_Load;
+        }
         divider = SDL_CreateTextureFromSurface(renderer, surface);
         if(!divider){
                 fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", path, SDL_GetError());
