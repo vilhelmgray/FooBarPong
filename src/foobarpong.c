@@ -78,14 +78,20 @@ int main(void){
         }
 
         unsigned running = 1;
+        Uint32 lastFrame = 0;
         do{
-                if(drawWorld(renderer)){
-                        fprintf(stderr, "*** Error: Unable to draw world\n");
-                        goto err_drawWorld;
-                }
+                Uint32 currFrame = SDL_GetTicks();
+                if(currFrame - lastFrame > 33){
+                        lastFrame = currFrame;
 
-                handleEvents(&running);
-                processWorld();
+                        if(drawWorld(renderer)){
+                                fprintf(stderr, "*** Error: Unable to draw world\n");
+                                goto err_drawWorld;
+                        }
+
+                        handleEvents(&running);
+                        processWorld();
+                }
         }while(running);
 
         freeFiles();
