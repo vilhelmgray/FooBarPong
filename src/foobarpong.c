@@ -437,14 +437,14 @@ static unsigned processWorld(SDL_Renderer *const renderer){
 
         if(BALL_X_START == 0){
                 player2.score++;
-                if(updateScoreTexture(&player1, renderer)){
+                if(updateScoreTexture(&player2, renderer)){
                         fprintf(stderr, "*** Error: Unable to update player 1 score texture\n");
                         return 1;
                 }
                 resetBall();
         }else if(BALL_X_END == WIDTH - 1){
                 player1.score++;
-                if(updateScoreTexture(&player2, renderer)){
+                if(updateScoreTexture(&player1, renderer)){
                         fprintf(stderr, "*** Error: Unable to update player 2 score texture\n");
                         return 1;
                 }
