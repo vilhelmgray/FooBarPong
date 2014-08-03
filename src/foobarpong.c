@@ -294,8 +294,8 @@ static void processWorld(void){
 
         const int BALL_X_START = ball.sprite.dimensions.x;
         const int BALL_X_END = BALL_X_START + (ball.sprite.dimensions.w-1);
-        const int BALL_Y_START = ball.sprite.dimensions.x;
-        const int BALL_Y_END = BALL_Y_START + (ball.sprite.dimensions.w-1);
+        const int BALL_Y_START = ball.sprite.dimensions.y;
+        const int BALL_Y_END = BALL_Y_START + (ball.sprite.dimensions.h-1);
 
         const int PLAYER1_X_START = player1.avatar.sprite.dimensions.x;
         const int PLAYER1_X_END = PLAYER1_X_START + (player1.avatar.sprite.dimensions.w-1);
