@@ -229,14 +229,14 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 goto err_load_player1;
         }
         player1.avatar.sprite.dimensions.x = (2*player1.avatar.sprite.dimensions.w > WIDTH) ? 0 : player1.avatar.sprite.dimensions.w;
-        player1.avatar.sprite.dimensions.y = 0;
+        player1.avatar.sprite.dimensions.y = (HEIGHT - player1.avatar.sprite.dimensions.h)/2;
 
         if(loadSprite("images/paddle2.png", &player2.avatar.sprite, renderer)){
                 fprintf(stderr, "*** Error: Unable to load player 2 sprite\n");
                 goto err_load_player2;
         }
         player2.avatar.sprite.dimensions.x = (WIDTH < 2*player2.avatar.sprite.dimensions.w) ? 0 : WIDTH - 2*player2.avatar.sprite.dimensions.w;
-        player2.avatar.sprite.dimensions.y = 0;
+        player2.avatar.sprite.dimensions.y = (HEIGHT - player2.avatar.sprite.dimensions.h)/2;
 
         IMG_Quit();
         return 0;
