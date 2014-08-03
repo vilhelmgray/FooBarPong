@@ -46,7 +46,7 @@ struct character{
         int x_vel;
         int y_vel;
 };
-static struct character ball;
+static struct character ball = { .x_vel = -5 };
 
 struct player{
         struct character avatar;
@@ -291,6 +291,11 @@ static void moveCharacter(struct character *character){
         character->sprite.dimensions.y = (Y_END + Y_VEL > HEIGHT - 1) ? HEIGHT - character->sprite.dimensions.h : ((Y_START + Y_VEL < 0) ? 0 : Y_START + Y_VEL);
 }
 
+static void paddleBounce(void){
+        ball.y_vel = rand() % 6;
+        ball.y_vel *= (rand() % 2) ? -1 : 1;
+}
+
 static void processWorld(void){
         moveCharacter(&player1.avatar);
         moveCharacter(&player2.avatar);
@@ -321,11 +326,13 @@ static void processWorld(void){
                 if((BALL_Y_START >= PLAYER1_Y_START && BALL_Y_START <= PLAYER1_Y_END) || (BALL_Y_END >= PLAYER1_Y_START && BALL_Y_END <= PLAYER1_Y_END)){
                         ball.sprite.dimensions.x = PLAYER1_X_END + 1;
                         ball.x_vel *= -1;
+                        paddleBounce();
                 }
         }else if((BALL_X_START >= PLAYER2_X_START && BALL_X_START <= PLAYER2_X_END) || (BALL_X_END >= PLAYER2_X_START && BALL_X_END <= PLAYER2_X_END)){
                 if((BALL_Y_START >= PLAYER2_Y_START && BALL_Y_START <= PLAYER2_Y_END) || (BALL_Y_END >= PLAYER2_Y_START && BALL_Y_END <= PLAYER2_Y_END)){
                         ball.sprite.dimensions.x = PLAYER2_X_START - ball.sprite.dimensions.w;
                         ball.x_vel *= -1;
+                        paddleBounce();
                 }
         }else if(BALL_Y_START == 0 || BALL_Y_END == HEIGHT -1){
                 ball.y_vel *= -1;
@@ -335,4 +342,6 @@ static void processWorld(void){
 static void resetBall(void){
         ball.sprite.dimensions.x = (WIDTH - ball.sprite.dimensions.w)/2;
         ball.sprite.dimensions.y = rand() % (HEIGHT - ball.sprite.dimensions.h);
+
+        paddleBounce();
 }
