@@ -93,7 +93,10 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                                   .h = 480 };
         divider_rect.x = (WIDTH - divider_rect.w)/2;
         divider_rect.y = (HEIGHT - divider_rect.h)/2;
-        SDL_RenderCopy(renderer, divider, NULL, &divider_rect);
+        if(SDL_RenderCopy(renderer, divider, NULL, &divider_rect)){
+                fprintf(stderr, "*** Error: Unable to draw divider: %s\n", SDL_GetError());
+                return 1;
+        }
 
         SDL_RenderPresent(renderer);
 
