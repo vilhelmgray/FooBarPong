@@ -162,11 +162,37 @@ static void handleEvents(unsigned *const running){
                 switch(event.type){
                         case SDL_KEYDOWN:
                                 switch(event.key.keysym.sym){
+                                        case SDLK_s:
+                                                player1.avatar.y_vel = 10;
+                                                break;
+                                        case SDLK_DOWN:
+                                                player2.avatar.y_vel = 10;
+                                                break;
                                         case SDLK_ESCAPE:
                                                 *running = 0;
                                                 break;
                                         case SDLK_RETURN:
                                                 newGame();
+                                                break;
+                                        case SDLK_UP:
+                                                player2.avatar.y_vel = -10;
+                                                break;
+                                        case SDLK_w:
+                                                player1.avatar.y_vel = -10;
+                                                break;
+                                        default:
+                                                break;
+                                }
+                                break;
+                        case SDL_KEYUP:
+                                switch(event.key.keysym.sym){
+                                        case SDLK_DOWN:
+                                        case SDLK_UP:
+                                                player2.avatar.y_vel = 0;
+                                                break;
+                                        case SDLK_s:
+                                        case SDLK_w:
+                                                player1.avatar.y_vel = 0;
                                                 break;
                                         default:
                                                 break;
