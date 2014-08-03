@@ -60,6 +60,9 @@ static void handleEvents(unsigned *const running);
 static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer);
 static unsigned loadFiles(SDL_Renderer *const renderer);
 static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer);
+static void moveCharacter(struct character *character);
+static void processWorld(void);
+static void resetBall(void);
 
 int main(void){
         SDL_Window *window;
@@ -82,6 +85,7 @@ int main(void){
                 }
 
                 handleEvents(&running);
+                processWorld();
         }while(running);
 
         freeFiles();
@@ -212,8 +216,7 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 fprintf(stderr, "*** Error: Unable to load ball sprite\n");
                 goto err_load_ball;
         }
-        ball.sprite.dimensions.x = (WIDTH - ball.sprite.dimensions.w)/2;
-        ball.sprite.dimensions.y = 0;
+        resetBall();
 
         if(loadSprite("images/paddle1.png", &player1.avatar.sprite, renderer)){
                 fprintf(stderr, "*** Error: Unable to load player 1 sprite\n");
@@ -264,4 +267,62 @@ static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, 
 err_create_texture:
         SDL_FreeSurface(surface);
         return 1;
+}
+
+static void moveCharacter(struct character *character){
+        const int X_START = character->sprite.dimensions.x;
+        const int X_END = X_START + (character->sprite.dimensions.w - 1);
+        const int X_VEL = character->x_vel;
+        const int Y_START = character->sprite.dimensions.y;
+        const int Y_END = Y_START + (character->sprite.dimensions.h - 1);
+        const int Y_VEL = character->y_vel;
+
+        character->sprite.dimensions.x = (X_END + X_VEL > WIDTH - 1) ? WIDTH - character->sprite.dimensions.w : ((X_START + X_VEL < 0) ? 0 : X_START + X_VEL);
+        character->sprite.dimensions.y = (Y_END + Y_VEL > HEIGHT - 1) ? HEIGHT - character->sprite.dimensions.h : ((Y_START + Y_VEL < 0) ? 0 : Y_START + Y_VEL);
+}
+
+static void processWorld(void){
+        moveCharacter(&player1.avatar);
+        moveCharacter(&player2.avatar);
+        moveCharacter(&ball);
+
+        const int BALL_X_START = ball.sprite.dimensions.x;
+        const int BALL_X_END = BALL_X_START + (ball.sprite.dimensions.w-1);
+        const int BALL_Y_START = ball.sprite.dimensions.x;
+        const int BALL_Y_END = BALL_Y_START + (ball.sprite.dimensions.w-1);
+
+        const int PLAYER1_X_START = player1.avatar.sprite.dimensions.x;
+        const int PLAYER1_X_END = PLAYER1_X_START + (player1.avatar.sprite.dimensions.w-1);
+        const int PLAYER1_Y_START = player1.avatar.sprite.dimensions.y;
+        const int PLAYER1_Y_END = PLAYER1_Y_START + (player1.avatar.sprite.dimensions.h-1);
+
+        const int PLAYER2_X_START = player2.avatar.sprite.dimensions.x;
+        const int PLAYER2_X_END = PLAYER2_X_START + (player2.avatar.sprite.dimensions.w-1);
+        const int PLAYER2_Y_START = player2.avatar.sprite.dimensions.y;
+        const int PLAYER2_Y_END = PLAYER2_Y_START + (player2.avatar.sprite.dimensions.h-1);
+
+        if(BALL_X_START == 0){
+                player1.score++;
+                resetBall();
+        }else if(BALL_X_END == WIDTH - 1){
+                player2.score++;
+                resetBall();
+        }else if((BALL_X_START >= PLAYER1_X_START && BALL_X_START <= PLAYER1_X_END) || (BALL_X_END >= PLAYER1_X_START && BALL_X_END <= PLAYER1_X_END)){
+                if((BALL_Y_START >= PLAYER1_Y_START && BALL_Y_START <= PLAYER1_Y_END) || (BALL_Y_END >= PLAYER1_Y_START && BALL_Y_END <= PLAYER1_Y_END)){
+                        ball.sprite.dimensions.x = PLAYER1_X_END + 1;
+                        ball.x_vel *= -1;
+                }
+        }else if((BALL_X_START >= PLAYER2_X_START && BALL_X_START <= PLAYER2_X_END) || (BALL_X_END >= PLAYER2_X_START && BALL_X_END <= PLAYER2_X_END)){
+                if((BALL_Y_START >= PLAYER2_Y_START && BALL_Y_START <= PLAYER2_Y_END) || (BALL_Y_END >= PLAYER2_Y_START && BALL_Y_END <= PLAYER2_Y_END)){
+                        ball.sprite.dimensions.x = PLAYER2_X_START - 1;
+                        ball.x_vel *= -1;
+                }
+        }else if(BALL_Y_START == 0 || BALL_Y_END == HEIGHT -1){
+                ball.y_vel *= -1;
+        }
+}
+
+static void resetBall(void){
+        ball.sprite.dimensions.x = (WIDTH - ball.sprite.dimensions.w)/2;
+        ball.sprite.dimensions.y = 0;
 }
