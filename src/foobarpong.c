@@ -26,7 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
-#include <string.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -39,7 +38,7 @@ struct sprite{
         SDL_Texture *texture;
 };
 
-static SDL_Texture *background;
+static struct sprite background;
 static struct sprite divider;
 
 static void closeDisplay(SDL_Window *const window, SDL_Renderer *const renderer);
@@ -48,6 +47,7 @@ static void freeFiles(void);
 static void handleEvents(unsigned *const running);
 static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer);
 static unsigned loadFiles(SDL_Renderer *const renderer);
+static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer);
 
 int main(void){
         SDL_Window *window;
@@ -96,7 +96,7 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
                 return 1;
         }
 
-        if(SDL_RenderCopy(renderer, background, NULL, NULL)){
+        if(SDL_RenderCopy(renderer, background.texture, NULL, &background.dimensions)){
                 fprintf(stderr, "*** Error: Unable to draw background: %s\n", SDL_GetError());
                 return 1;
         }
@@ -113,7 +113,7 @@ static unsigned drawWorld(SDL_Renderer *const renderer){
 
 static void freeFiles(void){
         SDL_DestroyTexture(divider.texture);
-        SDL_DestroyTexture(background);
+        SDL_DestroyTexture(background.texture);
 }
 
 static void handleEvents(unsigned *const running){
@@ -171,44 +171,47 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 return 1;
         }
 
-        char path[256] = "images/background.png";
-        SDL_Surface *surface = IMG_Load(path);
-        if(!surface){
-                fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", path, IMG_GetError());
-                goto err_IMG_Load;
+        if(loadSprite("images/background.png", &background, renderer)){
+                fprintf(stderr, "*** Error: Unable to load background sprite\n");
+                goto err_loadSprite;
         }
-        background = SDL_CreateTextureFromSurface(renderer, surface);
-        if(!background){
-                fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", path, SDL_GetError());
-                goto err_create_texture;
-        }
+        background.dimensions.x = 0;
+        background.dimensions.y = 0;
 
-        SDL_FreeSurface(surface);
-
-        strcpy(path, "images/divider.png");
-        surface = IMG_Load(path);
-        if(!surface){
-                fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", path, IMG_GetError());
-                goto err_IMG_Load;
+        if(loadSprite("images/divider.png", &divider, renderer)){
+                fprintf(stderr, "*** Error: Unable to load divider sprite\n");
+                goto err_loadSprite;
         }
-        divider.dimensions.w = (surface->w > WIDTH) ? WIDTH : surface->w;
-        divider.dimensions.h = (surface->h > HEIGHT) ? HEIGHT : surface->h;
         divider.dimensions.x = (WIDTH - divider.dimensions.w)/2;
         divider.dimensions.y = (HEIGHT - divider.dimensions.h)/2;
-        divider.texture = SDL_CreateTextureFromSurface(renderer, surface);
-        if(!divider.texture){
-                fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", path, SDL_GetError());
-                goto err_create_texture;
-        }
-
-        SDL_FreeSurface(surface);
 
         IMG_Quit();
         return 0;
 
+err_loadSprite:
+        IMG_Quit();
+        return 1;
+}
+
+static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer){
+        SDL_Surface *surface = IMG_Load(PATH);
+        if(!surface){
+                fprintf(stderr, "*** Error: Unable to load \"%s\": %s\n", PATH, IMG_GetError());
+                return 1;
+        }
+        sprite->dimensions.w = (surface->w > WIDTH) ? WIDTH : surface->w;
+        sprite->dimensions.h = (surface->h > HEIGHT) ? HEIGHT : surface->h;
+        sprite->texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if(!sprite->texture){
+                fprintf(stderr, "*** Error: Unable to create texture from \"%s\": %s\n", PATH, SDL_GetError());
+                goto err_create_texture;
+        }
+
+        SDL_FreeSurface(surface);
+
+        return 0;
+
 err_create_texture:
         SDL_FreeSurface(surface);
-err_IMG_Load:
-        IMG_Quit();
         return 1;
 }
