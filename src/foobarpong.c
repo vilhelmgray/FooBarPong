@@ -258,6 +258,7 @@ static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const rend
                 goto err_create_wind_rend;
         }
 
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
         if(SDL_RenderSetLogicalSize(*renderer, WIDTH, HEIGHT) < 0){
                 fprintf(stderr, "*** Error: Unable to set resolution for rendering: %s\n", SDL_GetError());
                 goto err_set_logical_size;
