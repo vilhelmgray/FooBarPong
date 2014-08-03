@@ -64,6 +64,7 @@ static unsigned loadFiles(SDL_Renderer *const renderer);
 static unsigned loadSprite(const char *const PATH, struct sprite *const sprite, SDL_Renderer *const renderer);
 static void moveCharacter(struct character *character);
 static void newGame(void);
+static void paddleBounce(void);
 static void processWorld(void);
 static void resetBall(void);
 
