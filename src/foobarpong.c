@@ -287,7 +287,7 @@ err_show_cursor:
 }
 
 static unsigned loadFiles(SDL_Renderer *const renderer){
-        char *font_path = "images/boingium.ttf";
+        char *font_path = "media/fonts/boingium.ttf";
         font = TTF_OpenFont(font_path, 32);
         if(!font){
                 fprintf(stderr, "*** Error: Unable to open font file \"%s\": %s\n", font_path, TTF_GetError());
@@ -308,27 +308,27 @@ static unsigned loadFiles(SDL_Renderer *const renderer){
                 goto err_img_init;
         }
 
-        if(loadSprite("images/background.png", &background, renderer)){
+        if(loadSprite("media/images/background.png", &background, renderer)){
                 fprintf(stderr, "*** Error: Unable to load background sprite\n");
                 goto err_load_background;
         }
         background.dimensions.x = 0;
         background.dimensions.y = 0;
 
-        if(loadSprite("images/ball.png", &ball.sprite, renderer)){
+        if(loadSprite("media/images/ball.png", &ball.sprite, renderer)){
                 fprintf(stderr, "*** Error: Unable to load ball sprite\n");
                 goto err_load_ball;
         }
         resetBall();
 
-        if(loadSprite("images/paddle1.png", &player1.avatar.sprite, renderer)){
+        if(loadSprite("media/images/paddle1.png", &player1.avatar.sprite, renderer)){
                 fprintf(stderr, "*** Error: Unable to load player 1 sprite\n");
                 goto err_load_player1;
         }
         player1.avatar.sprite.dimensions.x = (2*player1.avatar.sprite.dimensions.w > WIDTH) ? 0 : player1.avatar.sprite.dimensions.w;
         player1.avatar.sprite.dimensions.y = (HEIGHT - player1.avatar.sprite.dimensions.h)/2;
 
-        if(loadSprite("images/paddle2.png", &player2.avatar.sprite, renderer)){
+        if(loadSprite("media/images/paddle2.png", &player2.avatar.sprite, renderer)){
                 fprintf(stderr, "*** Error: Unable to load player 2 sprite\n");
                 goto err_load_player2;
         }
