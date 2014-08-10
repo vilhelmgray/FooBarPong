@@ -1,0 +1,21 @@
+The following media files are assumed to be present during the
+execution of FooBarPong:
+
+Images
+------
+Directory: media/images
+-----------------------
+Filename        File Format     Dimensions
+--------        -----------     ----------
+background.png  PNG-24          640 x 480
+ball.png        PNG-24          16 x 16
+paddle1.png     PNG-24          56 x 44
+paddle2.png     PNG-24          52 x 43
+
+Fonts
+-----
+Directory: media/fonts
+----------------------
+Filename        File Format
+--------        -----------
+boingium.ttf    TrueType
