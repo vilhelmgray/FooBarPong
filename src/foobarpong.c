@@ -47,7 +47,7 @@ struct character{
         int x_vel;
         int y_vel;
 };
-static struct character ball = { .x_vel = 5 };
+static struct character ball = { .x_vel = 10 };
 
 struct player{
         struct character avatar;
