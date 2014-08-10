@@ -1,1 +1,32 @@
-A naive Pong clone.
+                               FooBarPong
+
+About
+-----
+
+FooBarPong is a naive Pong clone implemented in order to learn the SDL
+2.0 API.
+
+Usage
+-----
+
+The goal of FooBarPong is for the player to get the ball past the
+opponent's paddle. A player is awarded a single point if the ball
+travels past the opponent's paddle. The ball will bounce off paddles,
+the top of the play area, and the bottom of the play area.
+
+Each player may control a single paddle on the player's respective
+side of the game area. The left side paddle is controlled by the 'w'
+and 's' keys. The right side paddle is controlled by the Up Arrow and
+Down Arrow keys.
+
+Licensing
+---------
+
+FooBarPong is free software released under the BSD 2-Clause License.
+
+See the file COPYING for copying conditions.
+
+Contact
+-------
+
+William Breathitt Gray <vilhelm.gray@gmail.com>
