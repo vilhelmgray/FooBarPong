@@ -7,10 +7,10 @@ Directory: media/images
 -----------------------
 Filename        File Format     Dimensions
 --------        -----------     ----------
-background.png  PNG-24          640 x 480
-ball.png        PNG-24          16 x 16
-paddle1.png     PNG-24          56 x 44
-paddle2.png     PNG-24          52 x 43
+background.png  PNG-8           640 x 480
+ball.png        PNG-24          18 x 18
+paddle1.png     PNG-24          22 x 48
+paddle2.png     PNG-24          22 x 48
 
 Fonts
 -----
