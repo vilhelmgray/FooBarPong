@@ -243,7 +243,7 @@ static unsigned handleEvents(unsigned *const running, SDL_Renderer *const render
 }
 
 static unsigned initDisplay(SDL_Window **const window, SDL_Renderer **const renderer){
-        if(SDL_Init(SDL_INIT_VIDEO) < 0){
+        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0){
                 fprintf(stderr, "*** Error: Unable to initialize SDL: %s\n", SDL_GetError());
                 return 1;
         }
