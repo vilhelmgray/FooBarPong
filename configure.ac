@@ -26,7 +26,7 @@ dnl ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 dnl POSSIBILITY OF SUCH DAMAGE.
 
 AC_PREREQ([2.69])
-AC_INIT([FooBarPong], [1.0], [vilhelm.gray@gmail.com])
+AC_INIT([FooBarPong], [1.1], [vilhelm.gray@gmail.com])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/foobarpong.c])
 AC_CONFIG_HEADERS([config.h])
